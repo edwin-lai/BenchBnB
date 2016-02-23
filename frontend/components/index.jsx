@@ -17,8 +17,16 @@ var Index = React.createClass({
     this.listener.remove();
   },
 
+  benches: function () {
+    return this.state.benches.map(function (obj) {
+      return obj.bench.description;
+    });
+  },
+
   render: function () {
-    return <content></content>;
+    return <ul>{this.state.benches.map(function (obj) {
+      return <li>{obj.bench.description}</li>;
+    })}</ul>;
   }
 });
 

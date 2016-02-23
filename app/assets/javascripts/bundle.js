@@ -19707,9 +19707,20 @@
 	      center: { lat: 37.7758, lng: -122.435 },
 	      zoom: 13
 	    };
-	    this.map = new google.maps.Map(mapDOMNode, mapOptions);
-	    this.map.addListener('idle', ApiUtil.fetchBenches);
 	    var that = this;
+	    var latLngBounds, ne, sw, bounds;
+	
+	    this.map = new google.maps.Map(mapDOMNode, mapOptions);
+	    this.map.addListener('idle', function () {
+	      latLngBounds = this.getBounds();
+	      ne = latLngBounds.getNorthEast();
+	      sw = latLngBounds.getSouthWest();
+	      bounds = { bounds: {
+	          northEast: { lat: ne.lat(), lng: ne.lng() },
+	          southWest: { lat: sw.lat(), lng: sw.lng() }
+	        } };
+	      ApiUtil.fetchBenches(bounds);
+	    });
 	
 	    this.listener = BenchStore.addListener(function () {
 	      var benches = BenchStore.all();
@@ -19769,8 +19780,24 @@
 	    this.listener.remove();
 	  },
 	
+	  benches: function () {
+	    return this.state.benches.map(function (obj) {
+	      return obj.bench.description;
+	    });
+	  },
+	
 	  render: function () {
-	    return React.createElement('content', null);
+	    return React.createElement(
+	      'ul',
+	      null,
+	      this.state.benches.map(function (obj) {
+	        return React.createElement(
+	          'li',
+	          null,
+	          obj.bench.description
+	        );
+	      })
+	    );
 	  }
 	});
 	
@@ -26584,8 +26611,8 @@
 	var ApiActions = __webpack_require__(186);
 	
 	var ApiUtil = {
-	  fetchBenches: function () {
-	    $.get('api/benches', function (data) {
+	  fetchBenches: function (bounds) {
+	    $.get('api/benches?' + jQuery.param(bounds), function (data) {
 	      ApiActions.receiveAll(data);
 	    });
 	  }
